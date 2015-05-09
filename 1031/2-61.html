@@ -1,0 +1,768 @@
+<html xmlns="http://www.w3.org/1999/xhtml"><head>
+<title>課程清單</title>
+<meta content="text/html; charset=big5" http-equiv="Content-Type" />
+<!--引用另開視窗的JavaScript-->
+<script src="gfOpenCourse.js" language="JavaScript"></script>
+<!--引用判斷勾選新增/刪除checkbox的JavaScript-->
+
+<!--引用課程查詢css-->
+<link type="text/css" rel="stylesheet" href="/queryCourse/queryCourse.css" />
+<link type="text/css" rel="stylesheet" href="/queryCourse/queryCourse.css" /><link type="text/css" rel="stylesheet" href="/SCASeat/SCASeat.css" /><meta content="text/html; charset=big5" http-equiv="Content-Type" /><script src="/webPublic/jsFunction.js" language="javascript"></script><script language="javascript">
+&lt;!--
+ //設定顏色
+ lvColor="#5A5A96";
+ lvVisitedColor="#D7559C";
+ lvMouseOverColor="#6077C6";
+ lvBackgroundImg="/webPublic/images/SubMenuBg.jpg";
+
+
+/*------------------設定功能選單狀態-------------------*/
+function gfSetMenuStyle(MainMenuIndex,SubMenuIndex) { 
+ 
+   /*----設定主功能選單初始狀態----*/
+   //for (tagObj in document.all.tags("td")) 
+   //for (tagObj in document.getElementsByTagName("td")) 
+   var td_objcol = document.getElementsByTagName("td");
+   for(i=0; i &lt; td_objcol.length; i++)
+   {
+	 //主功能選單
+	 id_str = td_objcol[i].id;
+	 if (id_str.substr(0,8) == "MainMenu")
+	 {
+ 	    //document.getElementById(tagObj).style.color=lvColor;
+ 	    //document.getElementById(tagObj).style.cursor="pointer";		
+     	//document.getElementById(tagObj).style.backgroundImage="none";
+ 	    td_objcol[i].style.color=lvColor;
+ 	    if (document.all)
+ 	    	td_objcol[i].style.cursor="pointer";
+ 	    else
+ 	    	td_objcol[i].style.cursor="pointer";
+     	td_objcol[i].style.backgroundImage="none";
+	 }
+   }
+
+   /*----設定子層功能選單初始狀態----*/
+   //for (tagObj in document.all.tags("span")) 
+   var span_objcol = document.getElementsByTagName("span");
+
+   //for (tagObj in document.getElementsByTagName("span"))
+   for(i=0; i &lt; span_objcol.length; i++) 
+   {
+   	  id_str = span_objcol[i].id;
+     //子層功能選單群組,預設關閉
+     
+     if (id_str.substr(0,12) == "SubMenuGroup")
+	 { 
+	 	
+       //document.getElementById(tagObj).style.display = "none";
+       //document.getElementById(tagObj).style.cursor="pointer";
+        span_objcol[i].style.display ="none";
+        if (document.all)
+        	span_objcol[i].style.cursor="pointer";
+        else
+        	span_objcol[i].style.cursor="pointer";
+ 
+     }
+	 //子層功能選單
+	 else if (id_str.substr(0,7) == "SubMenu")
+	 {
+	   span_objcol[i].style.color=lvColor;
+	   if (document.all)
+ 	   	span_objcol[i].style.cursor="pointer";
+ 	   else
+ 	   	span_objcol[i].style.cursor="pointer";
+       //document.getElementById(tagObj).style.color=lvColor;
+       //document.getElementById(tagObj).style.cursor="pointer";
+	 }
+   }
+
+   /*----將SubMenuLeft移到滑鼠指到的主功能選項下方,使滑鼠移動到該主功能選項下方時可以恢復選單狀態----*/
+   if (document.getElementById("MainMenu"+MainMenuIndex) &amp;&amp; document.getElementById("SubMenuLeft"))
+   {
+	  var lvMainMenuWidth=document.getElementById("MainMenu"+MainMenuIndex).offsetWidth;
+      var lvMainLeft=document.getElementById("MainMenu"+MainMenuIndex).offsetLeft;
+	  document.getElementById("SubMenuLeft").style.width=lvMainMenuWidth;  
+	  document.getElementById("SubMenuLeft").style.left=lvMainLeft;  
+   }
+
+   /*----開啟滑鼠指到or目前已點選的子層功能選單----*/
+   gfShowSubMenu (MainMenuIndex);
+   if (isNaN(eval(MainMenuIndex))==true)
+   {
+       gfShowSubMenu ("0");
+   }
+
+   /*----開啟滑鼠指到or目前已點選的主功能選項/子層功能選單/子層功能選項狀態----*/
+   gfChgMenuStyle(MainMenuIndex,SubMenuIndex);
+   gfChgMenuStyle("0","00");
+}
+
+/*-------開啟滑鼠指到or目前點選的子層功能選單-------*/
+function gfShowSubMenu (MenuIndex)
+{
+   //開啟滑鼠指到的子層功能選單
+   if (document.getElementById("SubMenuGroup"+MenuIndex))
+   {  
+      document.getElementById("SubMenuGroup"+MenuIndex).style.display='inline';
+	  //指定位置-子層功能選單寬度vs.功能列寬度:
+	  //1.未超過:則對齊該主功能選項
+	  //2.超過:則對齊功能列左邊
+	  var lvMenuBarWidth=document.getElementById("MenuBar").offsetWidth;
+      var lvMainLeft=document.getElementById("MainMenu"+MenuIndex).offsetLeft;
+      var lvSubWidth=document.getElementById("SubMenuGroup"+MenuIndex).offsetWidth;
+      document.getElementById("SubMenuLeft").style.width=5;  
+	  //1.未超過:則對齊該主功能選項	  
+	  if (lvMainLeft+lvSubWidth &lt;= lvMenuBarWidth)
+	  {
+	     document.getElementById("SubMenuGroup"+MenuIndex).style.left=lvMainLeft-17;
+		 //SubMenuLeft 起始點於開啟的SubMenuGroup左邊5px處
+		 document.getElementById("SubMenuLeft").style.left=(lvMainLeft-17)-5;
+		 //SubMenuRight 起始點於開啟的SubMenuGroup右邊5px處
+		 document.getElementById("SubMenuRight").style.left=(lvMainLeft+lvSubWidth)+5;
+      }
+	  //2.超過:則對齊功能列左邊
+	  else
+	  {
+	     document.getElementById("SubMenuGroup"+MenuIndex).style.left=lvMenuBarWidth-lvSubWidth;
+		 //SubMenuLeft 起始點於開啟的SubMenuGroup右邊5px處
+		 document.getElementById("SubMenuLeft").style.left=lvSubWidth+5;
+		 //SubMenuRight 起始點於開啟的SubMenuGroup右邊5px處
+		 document.getElementById("SubMenuRight").style.left=lvSubWidth+5;	         		 
+      }
+   }
+}
+
+/*-------設定滑鼠指到or目前點選的主功能選項/子層功能選單/子層功能選項狀態-------*/
+function gfChgMenuStyle(MainIndex,SubIndex)
+{
+   /*----設定主功能選項狀態----*/
+   if (document.getElementById("MainMenu"+MainIndex))
+   {
+     //滑鼠指到的字體顏色
+     if (MainIndex!="0")
+	 {
+	    document.getElementById("MainMenu"+MainIndex).style.color=lvMouseOverColor;
+     }
+	 //目前點選的字體顏色
+	 else
+	 {
+	    document.getElementById("MainMenu"+MainIndex).style.color=lvVisitedColor;
+	 }
+ 	 document.getElementById("MainMenu"+MainIndex).style.backgroundImage="url('"+lvBackgroundImg+"')";
+   }
+
+   /*----設定子層功能選單狀態----*/
+   if (document.getElementById("SubMenuGroup"+MainIndex))
+   {
+     document.getElementById("SubMenuGroup"+MainIndex).style.backgroundImage="url('"+lvBackgroundImg+"')";
+   }
+
+   /*----設定子層功能選項狀態----*/
+   if (document.getElementById("SubMenu"+SubIndex))
+   {
+     //滑鼠指到的字體顏色
+     if (SubIndex!="00")
+	 {
+        document.getElementById("SubMenu"+SubIndex).style.color=lvMouseOverColor;
+     }
+	 //目前點選的字體顏色
+	 else
+	 {
+	    document.getElementById("SubMenu"+SubIndex).style.color=lvVisitedColor;
+	 }
+   }
+}
+//--&gt;
+</script></head>
+
+<!------------------------->
+<!--引用公用頁首,並傳入參數-->
+<!------------------------->
+
+<!--引用課程查詢css-->
+
+<!--引用選座位css-->
+
+
+
+
+<!--避免中文錯誤-->
+
+
+
+
+
+<body bgcolor="#FFFFFF">  <!--94/04/25 abby-->
+<!--引用共同的css-->
+
+<link type="text/css" rel="stylesheet" href="/webPublic/pubCss.css" />
+
+<!-- 標頭-->
+<table width="100%" cellspacing="0" cellpadding="0" border="0" align="center" class="pubContent" id="tbTitle">
+	<!--顯示標題及子標題-->
+    <tbody><tr onmouseover="gfShowSubMenu('','')">
+      <td> </td>
+      <td width="49%" nowrap="nowrap" rowspan="2" class="pubProjTitle"><b><span><img src="/webPublic/images/titleItem.gif" />
+	  課程 / 課表查詢 <img src="/webPublic/images/titleSubItem.gif" /> 課程查詢 <img src="/webPublic/images/titleSub1Item.gif" /> 課程清單</span></b></td>
+      <td colspan="2"> </td>
+    </tr>
+
+	<!--顯示連結-->
+    <tr onmouseover="gfSetMenuStyle('','')">
+      <td width="3%"> </td>
+      <td width="43%" align="right" class="pubContent" id="tdRightLink">
+      | <a href="coursePeriodMap.asp?SysName=%BD%D2%B5%7B%B2M%B3%E6" class="headerA">節次與時間對照表</a>| <a href="queryByCourse.asp?QuerySource=queryCourse" class="headerA">回課程查詢</a>|
+	  </td>
+      <td width="8"> </td>
+    </tr>
+
+	<!--顯示功能選單-->
+	
+    <tr height="25" id="TrMainMenu">
+      <td width="3%" background="/webPublic/images/MainMenuBg.jpg" onmouseover="gfSetMenuStyle('','')"> </td>
+      <td background="/webPublic/images/MainMenuBg.jpg" colspan="2" id="MenuBar">
+	  <table cellspacing="0" cellpadding="0" height="100%" class="pubMenu"><tbody><tr>
+      <td> |</td><td onclick="window.location.href='queryByCourse.asp?QuerySource=queryCourse&amp;NoCache=2015%2F5%2F9+%A4U%A4%C8+06%3A09%3A41&amp;lvMainMenuIndex=0'" onmouseover='gfSetMenuStyle(0,"")' class="pubMenuLink" id="MainMenu0" style="color: rgb(215, 85, 156); cursor: pointer; background-image: url(&quot;/webPublic/images/SubMenuBg.jpg&quot;);"> 課程查詢 </td><td>|</td><td onclick="window.location.href='queryByClass.asp?QuerySource=queryCourse&amp;NoCache=2015%2F5%2F9+%A4U%A4%C8+06%3A09%3A41&amp;lvMainMenuIndex=1'" onmouseover='gfSetMenuStyle(1,"")' class="pubMenuLink" id="MainMenu1" style="color: rgb(90, 90, 150); cursor: pointer; background-image: none;"> 班級課表查詢 </td><td>|</td><td onclick="window.location.href='queryByTeacher.asp?QuerySource=queryCourse&amp;NoCache=2015%2F5%2F9+%A4U%A4%C8+06%3A09%3A41&amp;lvMainMenuIndex=2'" onmouseover='gfSetMenuStyle(2,"")' class="pubMenuLink" id="MainMenu2" style="color: rgb(90, 90, 150); cursor: pointer; background-image: none;"> 教師課表查詢 </td><td>|</td><td onclick="window.location.href='queryByRoom.asp?QuerySource=queryCourse&amp;NoCache=2015%2F5%2F9+%A4U%A4%C8+06%3A09%3A41&amp;lvMainMenuIndex=3'" onmouseover='gfSetMenuStyle(3,"")' class="pubMenuLink" id="MainMenu3" style="color: rgb(90, 90, 150); cursor: pointer; background-image: none;"> 教室課表查詢 </td><td>| </td>
+	  <td onmouseover='gfSetMenuStyle("","")'> </td></tr></tbody></table>
+	  </td>
+      <td width="8" background="/webPublic/images/MainMenuBg.jpg" onmouseover="gfSetMenuStyle('','')"> </td>
+    </tr>
+
+	<!--顯示子層功能選單-->
+      
+</tbody></table>
+
+<!--顯示分隔線-->
+<table width="98%" cellspacing="0" cellpadding="0" border="0" align="center" onmouseover="gfSetMenuStyle('','')" id="tbLine">
+<tbody><tr><td width="100%" valign="top" background="/webPublic/images/pointLine.gif" align="center" height="10"></td>
+</tr>
+</tbody></table>
+<span id="msgs"></span>
+<script language="JavaScript">
+&lt;!--
+gfSetMenuStyle("0","00");
+//點選指定的功能選單
+gfClickMenu();
+//--&gt;
+</script>
+
+
+<!--內文開始-->
+
+<table width="95%" border="0" align="center" id="AutoNumber1" class="pubContent">
+<tbody><tr><td width="92%" valign="top" align="center">
+       <form action="queryCourseGetRs.asp?QuerySource=queryCourse&amp;ApGUID=&amp;SeleLoginServer=" method="post">
+       <input type="hidden" value="0" name="BuildSQL" />
+       
+       <table width="100%" border="0" class="pubContent">
+       <tbody><tr><td align="center">
+       
+             <font color="#0033CC">
+			 103 學年第1學期 開課資料
+	         </font></td></tr><tr><td align="center" colspan="3">
+ 	         <font color="#666666">
+             符合條件的課程共 <font class="pubImportantMsg">1492</font> 筆，分 <font class="pubImportantMsg">75</font> 頁顯示，目前是第 
+             <input type="text" value="61" size="4" maxlength="4" name="AbsolutePage" class="seltext" /> 頁 <input type="hidden" value="20" maxlength="4" name="PageSize" size="4" /> </font>		 
+             <input type="submit" value="確定" name="Submit" class="pubContent" />
+       
+       </td></tr>
+	   </tbody></table>
+	   <table width="100%" cellspacing="0" cellpadding="3" border="0" align="center" id="MemoTable"><tbody><tr height="10"></tr><tr height="10"><td valign="bottom"><font color="#CC3300" style="font-size: 12px;">註：點選課程名稱，可顯示教學大綱；點選授課教師，可顯示教師課表(含輔導時間)</font></td></tr></tbody></table>
+       <table width="100%" cellspacing="0" bordercolor="#FFCC33" border="1" align="center" class="pubTable">
+       <tbody><tr>
+           
+	       <td width="4%" align="center" class="pubTdItem">編<br />號</td>
+           <td width="7%" align="center" class="pubTdItem">開課部門<br />院系所</td>
+           <td width="5%" align="center" class="pubTdItem">年班組</td>
+           <td width="7%" align="center" class="pubTdItem">科目代號<br />授課分組</td>
+           
+		         <td width="5%" align="center" class="pubTdItem">學年<br />學期</td>
+		   
+           <td width="17%" align="center" class="pubTdItem">科目名稱 / 先修科目
+           </td>
+           
+	           <td width="5%" align="center" class="pubTdItem">學分</td>
+	           <td width="9%" align="center" class="pubTdItem">授課教師</td>
+	           <td width="8%" align="center" class="pubTdItem">星期節次<br />上課地點</td>
+	           <td width="5%" align="center" class="pubTdItem">必選<br />修別</td>
+		   <td width="5%" align="center" class="pubTdItem">開課<br />人數</td><td width="8%" align="center" class="pubTdItem">選課/合班<br />人數</td><td width="5%" align="center" class="pubTdItem">尚餘<br />人數</td>
+       </tr>
+
+       <tr class="OddLine">
+           
+           <td align="center">1201</td>
+           <td align="center">舞蹈系  <br />UMSPD</td>
+           <td align="center">2  </td>
+           <td align="center">1476<br />00</td>
+           
+               <td align="center">學年</td>
+           
+		   <td align="center">
+		   <a target="_blank" class="red" href="/webPublic/ApSessionTrans/SessionTransfer.asp?dir=2aspx&amp;site=https://icas.pccu.edu.tw/cfp&amp;path=%2F%3Fccode%3D250191%26scode%3D250191%23syllpage" title="顯示教學大綱">現代舞（四）                            </a><br /><font color="#339900" onmouseover='gfNoticeOver(this,"")' onmouseout="gfNoticeOut(this)">術科</font><br /><a onclick="lfOpenCourseWindow('/queryCourse/coursePreCsno.asp?QueryYear=103&amp;Dept=UMSPD&amp;Class=2  &amp;Csno=1476&amp;deptCabbr=舞蹈系  &amp;csnoChnName=現代舞（四）                            ')" href="#" title="顯示先修科目">顯示先修科目</a>
+		   </td>
+           
+              <td align="center">1</td>
+              <td align="center">
+		   <a onclick="lfOpenCourseWindow('/queryCourse/queryByTeacher.asp?QuerySource=Profile&amp;hidChkSearch=searchByTeacher&amp;PsnNoName=8303606&amp;scdfYYM=1031')" class="blue2" href="#" title="顯示教師課表"> 蘇安莉</a>
+              </td>
+              <td align="center">4：08-09                         <br />孝        B107 <br /></td>
+              <td align="center">必</td>
+		   <td align="center">45</td><td align="center">34</td><td align="center"><font color="#DB0000">11</font></td>
+       </tr>
+
+       <tr class="EvenSecLine">
+           
+           <td align="center">1202</td>
+           <td align="center">舞蹈系  <br />UMSPD</td>
+           <td align="center">2  </td>
+           <td align="center">1699<br />00</td>
+           
+               <td align="center">學年</td>
+           
+		   <td align="center">
+		   <a target="_blank" class="red" href="/webPublic/ApSessionTrans/SessionTransfer.asp?dir=2aspx&amp;site=https://icas.pccu.edu.tw/cfp&amp;path=%2F%3Fccode%3D250192%26scode%3D250192%23syllpage" title="顯示教學大綱">舞譜                                    </a><br /><font color="#339900" onmouseover='gfNoticeOver(this,"")' onmouseout="gfNoticeOut(this)">術科</font><br /><a onclick="lfOpenCourseWindow('/queryCourse/coursePreCsno.asp?QueryYear=103&amp;Dept=UMSPD&amp;Class=2  &amp;Csno=1699&amp;deptCabbr=舞蹈系  &amp;csnoChnName=舞譜                                    ')" href="#" title="顯示先修科目">顯示先修科目</a>
+		   </td>
+           
+              <td align="center">2</td>
+              <td align="center">
+		   <a onclick="lfOpenCourseWindow('/queryCourse/queryByTeacher.asp?QuerySource=Profile&amp;hidChkSearch=searchByTeacher&amp;PsnNoName=5800722&amp;scdfYYM=1031')" class="blue2" href="#" title="顯示教師課表"> 伍曼麗</a>
+              </td>
+              <td align="center">2：03-04                         <br />仁        0102 <br /></td>
+              <td align="center">選</td>
+		   <td align="center">30</td><td align="center">32</td><td align="center"><font color="#DB0000">--</font></td>
+       </tr>
+
+       <tr class="OddLine">
+           
+           <td align="center">1203</td>
+           <td align="center">舞蹈系  <br />UMSPD</td>
+           <td align="center">2  </td>
+           <td align="center">1878<br />00</td>
+           
+               <td align="center">學年</td>
+           
+		   <td align="center">
+		   <a target="_blank" class="red" href="/webPublic/ApSessionTrans/SessionTransfer.asp?dir=2aspx&amp;site=https://icas.pccu.edu.tw/cfp&amp;path=%2F%3Fccode%3D250193%26scode%3D250193%23syllpage" title="顯示教學大綱">動作分析                                </a><br /><font color="#339900" onmouseover='gfNoticeOver(this,"")' onmouseout="gfNoticeOut(this)">術科</font><br /><a onclick="lfOpenCourseWindow('/queryCourse/coursePreCsno.asp?QueryYear=103&amp;Dept=UMSPD&amp;Class=2  &amp;Csno=1878&amp;deptCabbr=舞蹈系  &amp;csnoChnName=動作分析                                ')" href="#" title="顯示先修科目">顯示先修科目</a>
+		   </td>
+           
+              <td align="center">1</td>
+              <td align="center">
+		   <a onclick="lfOpenCourseWindow('/queryCourse/queryByTeacher.asp?QuerySource=Profile&amp;hidChkSearch=searchByTeacher&amp;PsnNoName=6200486&amp;scdfYYM=1031')" class="blue2" href="#" title="顯示教師課表"> 江映碧</a>
+              </td>
+              <td align="center">4：06-07                         <br />仁        0113 <br /></td>
+              <td align="center">必</td>
+		   <td align="center">40</td><td align="center">38</td><td align="center"><font color="#DB0000">2</font></td>
+       </tr>
+
+       <tr class="EvenSecLine">
+           
+           <td align="center">1204</td>
+           <td align="center">舞蹈系  <br />UMSPD</td>
+           <td align="center">2  </td>
+           <td align="center">3860<br />00</td>
+           
+               <td align="center">學期</td>
+           
+		   <td align="center">
+		   <a target="_blank" class="red" href="/webPublic/ApSessionTrans/SessionTransfer.asp?dir=2aspx&amp;site=https://icas.pccu.edu.tw/cfp&amp;path=%2F%3Fccode%3D250194%26scode%3D250194%23syllpage" title="顯示教學大綱">解剖學                                  </a><br /><font color="#339900" onmouseover='gfNoticeOver(this,"")' onmouseout="gfNoticeOut(this)">術科</font>
+		   </td>
+           
+              <td align="center">2</td>
+              <td align="center">
+		   <a onclick="lfOpenCourseWindow('/queryCourse/queryByTeacher.asp?QuerySource=Profile&amp;hidChkSearch=searchByTeacher&amp;PsnNoName=A301969&amp;scdfYYM=1031')" class="blue2" href="#" title="顯示教師課表"> 陳佑安</a>
+              </td>
+              <td align="center">5：06-07                         <br />仁        0125 <br /></td>
+              <td align="center">必</td>
+		   <td align="center">45</td><td align="center">41</td><td align="center"><font color="#DB0000">4</font></td>
+       </tr>
+
+       <tr class="OddLine">
+           
+           <td align="center">1205</td>
+           <td align="center">舞蹈系  <br />UMSPD</td>
+           <td align="center">2  </td>
+           <td align="center">4558<br />00</td>
+           
+               <td align="center">學期</td>
+           
+		   <td align="center">
+		   <a target="_blank" class="red" href="/webPublic/ApSessionTrans/SessionTransfer.asp?dir=2aspx&amp;site=https://icas.pccu.edu.tw/cfp&amp;path=%2F%3Fccode%3D250195%26scode%3D250195%23syllpage" title="顯示教學大綱">舞台化粧                                </a><br /><font color="#339900" onmouseover='gfNoticeOver(this,"")' onmouseout="gfNoticeOut(this)">術科</font><br /><a onclick="lfOpenCourseWindow('/queryCourse/coursePreCsno.asp?QueryYear=103&amp;Dept=UMSPD&amp;Class=2  &amp;Csno=4558&amp;deptCabbr=舞蹈系  &amp;csnoChnName=舞台化粧                                ')" href="#" title="顯示先修科目">顯示先修科目</a>
+		   </td>
+           
+              <td align="center">2</td>
+              <td align="center">
+		   <a onclick="lfOpenCourseWindow('/queryCourse/queryByTeacher.asp?QuerySource=Profile&amp;hidChkSearch=searchByTeacher&amp;PsnNoName=8103500&amp;scdfYYM=1031')" class="blue2" href="#" title="顯示教師課表"> 劉華</a>
+              </td>
+              <td align="center">5：01-02                         <br />仁        0218 <br /></td>
+              <td align="center">選</td>
+		   <td align="center">55</td><td align="center">39</td><td align="center"><font color="#DB0000">16</font></td>
+       </tr>
+
+       <tr class="EvenSecLine">
+           
+           <td align="center">1206</td>
+           <td align="center">舞蹈系  <br />UMSPD</td>
+           <td align="center">2  </td>
+           <td align="center">7969<br />00</td>
+           
+               <td align="center">學年</td>
+           
+		   <td align="center">
+		   <a target="_blank" class="red" href="/webPublic/ApSessionTrans/SessionTransfer.asp?dir=2aspx&amp;site=https://icas.pccu.edu.tw/cfp&amp;path=%2F%3Fccode%3D250196%26scode%3D250196%23syllpage" title="顯示教學大綱">中國舞蹈（二）                          </a><br /><font color="#339900" onmouseover='gfNoticeOver(this,"")' onmouseout="gfNoticeOut(this)">術科</font><br /><a onclick="lfOpenCourseWindow('/queryCourse/coursePreCsno.asp?QueryYear=103&amp;Dept=UMSPD&amp;Class=2  &amp;Csno=7969&amp;deptCabbr=舞蹈系  &amp;csnoChnName=中國舞蹈（二）                          ')" href="#" title="顯示先修科目">顯示先修科目</a>
+		   </td>
+           
+              <td align="center">1</td>
+              <td align="center">
+		   <a onclick="lfOpenCourseWindow('/queryCourse/queryByTeacher.asp?QuerySource=Profile&amp;hidChkSearch=searchByTeacher&amp;PsnNoName=7001312&amp;scdfYYM=1031')" class="blue2" href="#" title="顯示教師課表"> 鄭維怜</a>
+              </td>
+              <td align="center">2：06-07                         <br />孝        B107 <br /></td>
+              <td align="center">必</td>
+		   <td align="center">45</td><td align="center">35</td><td align="center"><font color="#DB0000">10</font></td>
+       </tr>
+
+       <tr class="OddLine">
+           
+           <td align="center">1207</td>
+           <td align="center">舞蹈系  <br />UMSPD</td>
+           <td align="center">2  </td>
+           <td align="center">C957<br />00</td>
+           
+               <td align="center">學年</td>
+           
+		   <td align="center">
+		   <a target="_blank" class="red" href="/webPublic/ApSessionTrans/SessionTransfer.asp?dir=2aspx&amp;site=https://icas.pccu.edu.tw/cfp&amp;path=%2F%3Fccode%3D250197%26scode%3D250197%23syllpage" title="顯示教學大綱">硬鞋技巧                                </a><br /><font color="#339900" onmouseover='gfNoticeOver(this,"")' onmouseout="gfNoticeOut(this)">術科</font><br /><a onclick="lfOpenCourseWindow('/queryCourse/coursePreCsno.asp?QueryYear=103&amp;Dept=UMSPD&amp;Class=2  &amp;Csno=C957&amp;deptCabbr=舞蹈系  &amp;csnoChnName=硬鞋技巧                                ')" href="#" title="顯示先修科目">顯示先修科目</a>
+		   </td>
+           
+              <td align="center">2</td>
+              <td align="center">
+		   <a onclick="lfOpenCourseWindow('/queryCourse/queryByTeacher.asp?QuerySource=Profile&amp;hidChkSearch=searchByTeacher&amp;PsnNoName=9301275&amp;scdfYYM=1031')" class="blue2" href="#" title="顯示教師課表"> 何郁玟</a>
+              </td>
+              <td align="center">3：06-07                         <br />仁        0101 <br /></td>
+              <td align="center">選</td>
+		   <td align="center">40</td><td align="center">18</td><td align="center"><font color="#DB0000">22</font></td>
+       </tr>
+
+       <tr class="EvenSecLine">
+           
+           <td align="center">1208</td>
+           <td align="center">舞蹈系  <br />UMSPD</td>
+           <td align="center">2  </td>
+           <td align="center">E530<br />00</td>
+           
+               <td align="center">學年</td>
+           
+		   <td align="center">
+		   <a target="_blank" class="red" href="/webPublic/ApSessionTrans/SessionTransfer.asp?dir=2aspx&amp;site=https://icas.pccu.edu.tw/cfp&amp;path=%2F%3Fccode%3D250198%26scode%3D250198%23syllpage" title="顯示教學大綱">表演實務                                </a><br /><a onclick="lfOpenCourseWindow('/queryCourse/coursePreCsno.asp?QueryYear=103&amp;Dept=UMSPD&amp;Class=2  &amp;Csno=E530&amp;deptCabbr=舞蹈系  &amp;csnoChnName=表演實務                                ')" href="#" title="顯示先修科目">顯示先修科目</a>
+		   </td>
+           
+              <td align="center">1</td>
+              <td align="center">
+		   <a onclick="lfOpenCourseWindow('/queryCourse/queryByTeacher.asp?QuerySource=Profile&amp;hidChkSearch=searchByTeacher&amp;PsnNoName=7703058&amp;scdfYYM=1031')" class="blue2" href="#" title="顯示教師課表"> 林郁晶</a> 
+              </td>
+              <td align="center">3：03-04                         <br />仁        0113 <br /></td>
+              <td align="center">必</td>
+		   <td align="center">40</td><td align="center">37</td><td align="center"><font color="#DB0000">3</font></td>
+       </tr>
+
+       <tr class="OddLine">
+           
+           <td align="center">1209</td>
+           <td align="center">舞蹈系  <br />UMSPD</td>
+           <td align="center">2  </td>
+           <td align="center">E543<br />00</td>
+           
+               <td align="center">學年</td>
+           
+		   <td align="center">
+		   <a target="_blank" class="red" href="/webPublic/ApSessionTrans/SessionTransfer.asp?dir=2aspx&amp;site=https://icas.pccu.edu.tw/cfp&amp;path=%2F%3Fccode%3D250199%26scode%3D250199%23syllpage" title="顯示教學大綱">芭蕾（三）                              </a><br /><font color="#339900" onmouseover='gfNoticeOver(this,"")' onmouseout="gfNoticeOut(this)">術科</font><br /><a onclick="lfOpenCourseWindow('/queryCourse/coursePreCsno.asp?QueryYear=103&amp;Dept=UMSPD&amp;Class=2  &amp;Csno=E543&amp;deptCabbr=舞蹈系  &amp;csnoChnName=芭蕾（三）                              ')" href="#" title="顯示先修科目">顯示先修科目</a>
+		   </td>
+           
+              <td align="center">1</td>
+              <td align="center">
+		   <a onclick="lfOpenCourseWindow('/queryCourse/queryByTeacher.asp?QuerySource=Profile&amp;hidChkSearch=searchByTeacher&amp;PsnNoName=9301275&amp;scdfYYM=1031')" class="blue2" href="#" title="顯示教師課表"> 何郁玟</a>
+              </td>
+              <td align="center">1：01-02                         <br />孝        B107 <br /></td>
+              <td align="center">必</td>
+		   <td align="center">45</td><td align="center">34</td><td align="center"><font color="#DB0000">11</font></td>
+       </tr>
+
+       <tr class="EvenSecLine">
+           
+           <td align="center">1210</td>
+           <td align="center">舞蹈系  <br />UMSPD</td>
+           <td align="center">2  </td>
+           <td align="center">E544<br />00</td>
+           
+               <td align="center">學年</td>
+           
+		   <td align="center">
+		   <a target="_blank" class="red" href="/webPublic/ApSessionTrans/SessionTransfer.asp?dir=2aspx&amp;site=https://icas.pccu.edu.tw/cfp&amp;path=%2F%3Fccode%3D250200%26scode%3D250200%23syllpage" title="顯示教學大綱">芭蕾（四）                              </a><br /><font color="#339900" onmouseover='gfNoticeOver(this,"")' onmouseout="gfNoticeOut(this)">術科</font><br /><a onclick="lfOpenCourseWindow('/queryCourse/coursePreCsno.asp?QueryYear=103&amp;Dept=UMSPD&amp;Class=2  &amp;Csno=E544&amp;deptCabbr=舞蹈系  &amp;csnoChnName=芭蕾（四）                              ')" href="#" title="顯示先修科目">顯示先修科目</a>
+		   </td>
+           
+              <td align="center">1</td>
+              <td align="center">
+		   <a onclick="lfOpenCourseWindow('/queryCourse/queryByTeacher.asp?QuerySource=Profile&amp;hidChkSearch=searchByTeacher&amp;PsnNoName=7001444&amp;scdfYYM=1031')" class="blue2" href="#" title="顯示教師課表"> 魏沛霖</a>
+              </td>
+              <td align="center">2：08-09                         <br />仁        0101 <br /></td>
+              <td align="center">必</td>
+		   <td align="center">40</td><td align="center">34</td><td align="center"><font color="#DB0000">6</font></td>
+       </tr>
+
+       <tr class="OddLine">
+           
+           <td align="center">1211</td>
+           <td align="center">舞蹈系  <br />UMSPD</td>
+           <td align="center">2  </td>
+           <td align="center">G246<br />00</td>
+           
+               <td align="center">學期</td>
+           
+		   <td align="center">
+		   <a target="_blank" class="red" href="/webPublic/ApSessionTrans/SessionTransfer.asp?dir=2aspx&amp;site=https://icas.pccu.edu.tw/cfp&amp;path=%2F%3Fccode%3D252212%26scode%3D252212%23syllpage" title="顯示教學大綱">藝術職業倫理(二)                        </a><br /><font color="#339900" onmouseover='gfNoticeOver(this,"")' onmouseout="gfNoticeOut(this)">倫理課程</font>
+		   </td>
+           
+              <td align="center">1</td>
+              <td align="center">
+		   <a onclick="lfOpenCourseWindow('/queryCourse/queryByTeacher.asp?QuerySource=Profile&amp;hidChkSearch=searchByTeacher&amp;PsnNoName=7001312&amp;scdfYYM=1031')" class="blue2" href="#" title="顯示教師課表"> 鄭維怜</a><br /><a onclick="lfOpenCourseWindow('/queryCourse/queryByTeacher.asp?QuerySource=Profile&amp;hidChkSearch=searchByTeacher&amp;PsnNoName=7001444&amp;scdfYYM=1031')" class="blue2" href="#" title="顯示教師課表"> 魏沛霖</a>
+              </td>
+              <td align="center">1：03-04                         <br />仁        0101 <br /></td>
+              <td align="center">必</td>
+		   <td align="center">40</td><td align="center">36</td><td align="center"><font color="#DB0000">4</font></td>
+       </tr>
+
+       <tr class="EvenSecLine">
+           
+           <td align="center">1212</td>
+           <td align="center">舞蹈系  <br />UMSPD</td>
+           <td align="center">2  </td>
+           <td align="center">H275<br />00</td>
+           
+               <td align="center">學期</td>
+           
+		   <td align="center">
+		   <a target="_blank" class="red" href="/webPublic/ApSessionTrans/SessionTransfer.asp?dir=2aspx&amp;site=https://icas.pccu.edu.tw/cfp&amp;path=%2F%3Fccode%3D259122%26scode%3D259122%23syllpage" title="顯示教學大綱">中國民間舞蹈研究                        </a><br /><font color="#339900" onmouseover='gfNoticeOver(this,"")' onmouseout="gfNoticeOut(this)">移地教學課程</font>
+		   </td>
+           
+              <td align="center">1</td>
+              <td align="center">
+		   <a onclick="lfOpenCourseWindow('/queryCourse/queryByTeacher.asp?QuerySource=Profile&amp;hidChkSearch=searchByTeacher&amp;PsnNoName=7001169&amp;scdfYYM=1031')" class="blue2" href="#" title="顯示教師課表"> 盧翠滋</a>
+              </td>
+              <td align="center">--</td>
+              <td align="center">選</td>
+		   <td align="center">999</td><td align="center">17</td><td align="center"><font color="#DB0000">982</font></td>
+       </tr>
+
+       <tr class="OddLine">
+           
+           <td align="center">1213</td>
+           <td align="center">師培中心<br />UPCTE</td>
+           <td align="center">2  </td>
+           <td align="center">2282<br />00</td>
+           
+               <td align="center">學期</td>
+           
+		   <td align="center">
+		   <a target="_blank" class="red" href="/webPublic/ApSessionTrans/SessionTransfer.asp?dir=2aspx&amp;site=https://icas.pccu.edu.tw/cfp&amp;path=%2F%3Fccode%3D250441%26scode%3D250441%23syllpage" title="顯示教學大綱">特殊教育                                </a>
+		   </td>
+           
+              <td align="center">3</td>
+              <td align="center">
+		   <a onclick="lfOpenCourseWindow('/queryCourse/queryByTeacher.asp?QuerySource=Profile&amp;hidChkSearch=searchByTeacher&amp;PsnNoName=A100262&amp;scdfYYM=1031')" class="blue2" href="#" title="顯示教師課表"> 王等元</a>
+              </td>
+              <td align="center">5：03-05                         <br />孝        0624 <br /></td>
+              <td align="center">選</td>
+		   <td align="center">48</td><td align="center">23</td><td align="center"><font color="#DB0000">25</font></td>
+       </tr>
+
+       <tr class="EvenSecLine">
+           
+           <td align="center">1214</td>
+           <td align="center">師培中心<br />UPCTE</td>
+           <td align="center">2  </td>
+           <td align="center">3803<br />00</td>
+           
+               <td align="center">學期</td>
+           
+		   <td align="center">
+		   <a target="_blank" class="red" href="/webPublic/ApSessionTrans/SessionTransfer.asp?dir=2aspx&amp;site=https://icas.pccu.edu.tw/cfp&amp;path=%2F%3Fccode%3D250701%26scode%3D250701%23syllpage" title="顯示教學大綱">日文科分科教材教法                      </a>
+		   </td>
+           
+              <td align="center">2</td>
+              <td align="center">
+		   <a onclick="lfOpenCourseWindow('/queryCourse/queryByTeacher.asp?QuerySource=Profile&amp;hidChkSearch=searchByTeacher&amp;PsnNoName=9900411&amp;scdfYYM=1031')" class="blue2" href="#" title="顯示教師課表"> 陳毓敏</a><br /><a onclick="lfOpenCourseWindow('/queryCourse/queryByTeacher.asp?QuerySource=Profile&amp;hidChkSearch=searchByTeacher&amp;PsnNoName=A100289&amp;scdfYYM=1031')" class="blue2" href="#" title="顯示教師課表"> 劉語霏</a>
+              </td>
+              <td align="center">2：03-04                         <br />無        <br /></td>
+              <td align="center">必</td>
+		   <td align="center">999</td><td align="center">1</td><td align="center"><font color="#DB0000">998</font></td>
+       </tr>
+
+       <tr class="OddLine">
+           
+           <td align="center">1215</td>
+           <td align="center">師培中心<br />UPCTE</td>
+           <td align="center">2  </td>
+           <td align="center">4946<br />00</td>
+           
+               <td align="center">學期</td>
+           
+		   <td align="center">
+		   <a target="_blank" class="red" href="/webPublic/ApSessionTrans/SessionTransfer.asp?dir=2aspx&amp;site=https://icas.pccu.edu.tw/cfp&amp;path=%2F%3Fccode%3D250702%26scode%3D250702%23syllpage" title="顯示教學大綱">班級經營                                </a><br /><font color="#339900" onmouseover='gfNoticeOver(this,"")' onmouseout="gfNoticeOut(this)">業師合授</font>
+		   </td>
+           
+              <td align="center">2</td>
+              <td align="center">
+		   <a onclick="lfOpenCourseWindow('/queryCourse/queryByTeacher.asp?QuerySource=Profile&amp;hidChkSearch=searchByTeacher&amp;PsnNoName=9902538&amp;scdfYYM=1031')" class="blue2" href="#" title="顯示教師課表"> 陳琦媛</a>
+              </td>
+              <td align="center">1：06-07                         <br />孝        0508 <br /></td>
+              <td align="center">必</td>
+		   <td align="center">89</td><td align="center">45</td><td align="center"><font color="#DB0000">44</font></td>
+       </tr>
+
+       <tr class="EvenSecLine">
+           
+           <td align="center">1216</td>
+           <td align="center">師培中心<br />UPCTE</td>
+           <td align="center">2  </td>
+           <td align="center">8232<br />00</td>
+           
+               <td align="center">學期</td>
+           
+		   <td align="center">
+		   <a target="_blank" class="red" href="/webPublic/ApSessionTrans/SessionTransfer.asp?dir=2aspx&amp;site=https://icas.pccu.edu.tw/cfp&amp;path=%2F%3Fccode%3D248113%26scode%3D248113%23syllpage" title="顯示教學大綱">教育名著選讀                            </a>
+		   </td>
+           
+              <td align="center">2</td>
+              <td align="center">
+		   <a onclick="lfOpenCourseWindow('/queryCourse/queryByTeacher.asp?QuerySource=Profile&amp;hidChkSearch=searchByTeacher&amp;PsnNoName=A000039&amp;scdfYYM=1031')" class="blue2" href="#" title="顯示教師課表"> 單文經</a>
+              </td>
+              <td align="center">3：03-04                         <br />孝        0708 <br /></td>
+              <td align="center">選</td>
+		   <td align="center">119</td><td align="center">18</td><td align="center"><font color="#DB0000">101</font></td>
+       </tr>
+
+       <tr class="OddLine">
+           
+           <td align="center">1217</td>
+           <td align="center">師培中心<br />UPCTE</td>
+           <td align="center">2  </td>
+           <td align="center">A144<br />00</td>
+           
+               <td align="center">學期</td>
+           
+		   <td align="center">
+		   <a target="_blank" class="red" href="/webPublic/ApSessionTrans/SessionTransfer.asp?dir=2aspx&amp;site=https://icas.pccu.edu.tw/cfp&amp;path=%2F%3Fccode%3D250703%26scode%3D250703%23syllpage" title="顯示教學大綱">語文領域國文教材教法                    </a>
+		   </td>
+           
+              <td align="center">2</td>
+              <td align="center">
+		   <a onclick="lfOpenCourseWindow('/queryCourse/queryByTeacher.asp?QuerySource=Profile&amp;hidChkSearch=searchByTeacher&amp;PsnNoName=7804431&amp;scdfYYM=1031')" class="blue2" href="#" title="顯示教師課表"> 吳美幸</a><br /><a onclick="lfOpenCourseWindow('/queryCourse/queryByTeacher.asp?QuerySource=Profile&amp;hidChkSearch=searchByTeacher&amp;PsnNoName=A101455&amp;scdfYYM=1031')" class="blue2" href="#" title="顯示教師課表"> 廖遠光</a>
+              </td>
+              <td align="center">1：03-04                         <br />孝        0624 <br /></td>
+              <td align="center">必</td>
+		   <td align="center">48</td><td align="center">7</td><td align="center"><font color="#DB0000">41</font></td>
+       </tr>
+
+       <tr class="EvenSecLine">
+           
+           <td align="center">1218</td>
+           <td align="center">師培中心<br />UPCTE</td>
+           <td align="center">2  </td>
+           <td align="center">A146<br />00</td>
+           
+               <td align="center">學期</td>
+           
+		   <td align="center">
+		   <a target="_blank" class="red" href="/webPublic/ApSessionTrans/SessionTransfer.asp?dir=2aspx&amp;site=https://icas.pccu.edu.tw/cfp&amp;path=%2F%3Fccode%3D255164%26scode%3D255164%23syllpage" title="顯示教學大綱">數學領域教材教法                        </a>
+		   </td>
+           
+              <td align="center">2</td>
+              <td align="center">
+		   <a onclick="lfOpenCourseWindow('/queryCourse/queryByTeacher.asp?QuerySource=Profile&amp;hidChkSearch=searchByTeacher&amp;PsnNoName=7903804&amp;scdfYYM=1031')" class="blue2" href="#" title="顯示教師課表"> 王永成</a><br /><a onclick="lfOpenCourseWindow('/queryCourse/queryByTeacher.asp?QuerySource=Profile&amp;hidChkSearch=searchByTeacher&amp;PsnNoName=A100289&amp;scdfYYM=1031')" class="blue2" href="#" title="顯示教師課表"> 劉語霏</a>
+              </td>
+              <td align="center">5：03-04                         <br />無        <br /></td>
+              <td align="center">必</td>
+		   <td align="center">999</td><td align="center">3</td><td align="center"><font color="#DB0000">996</font></td>
+       </tr>
+
+       <tr class="OddLine">
+           
+           <td align="center">1219</td>
+           <td align="center">師培中心<br />UPCTE</td>
+           <td align="center">2  </td>
+           <td align="center">A147<br />00</td>
+           
+               <td align="center">學期</td>
+           
+		   <td align="center">
+		   <a target="_blank" class="red" href="/webPublic/ApSessionTrans/SessionTransfer.asp?dir=2aspx&amp;site=https://icas.pccu.edu.tw/cfp&amp;path=%2F%3Fccode%3D250705%26scode%3D250705%23syllpage" title="顯示教學大綱">健康與體育領域體育教材教法              </a>
+		   </td>
+           
+              <td align="center">2</td>
+              <td align="center">
+		   <a onclick="lfOpenCourseWindow('/queryCourse/queryByTeacher.asp?QuerySource=Profile&amp;hidChkSearch=searchByTeacher&amp;PsnNoName=9602321&amp;scdfYYM=1031')" class="blue2" href="#" title="顯示教師課表"> 彭賢德</a><br /><a onclick="lfOpenCourseWindow('/queryCourse/queryByTeacher.asp?QuerySource=Profile&amp;hidChkSearch=searchByTeacher&amp;PsnNoName=A100289&amp;scdfYYM=1031')" class="blue2" href="#" title="顯示教師課表"> 劉語霏</a>
+              </td>
+              <td align="center">5：06-07                         <br />無        <br /></td>
+              <td align="center">必</td>
+		   <td align="center">999</td><td align="center">10</td><td align="center"><font color="#DB0000">989</font></td>
+       </tr>
+
+       <tr class="EvenSecLine">
+           
+           <td align="center">1220</td>
+           <td align="center">師培中心<br />UPCTE</td>
+           <td align="center">2  </td>
+           <td align="center">A148<br />00</td>
+           
+               <td align="center">學期</td>
+           
+		   <td align="center">
+		   <a target="_blank" class="red" href="/webPublic/ApSessionTrans/SessionTransfer.asp?dir=2aspx&amp;site=https://icas.pccu.edu.tw/cfp&amp;path=%2F%3Fccode%3D250706%26scode%3D250706%23syllpage" title="顯示教學大綱">社會領域地理教材教法                    </a>
+		   </td>
+           
+              <td align="center">2</td>
+              <td align="center">
+		   <a onclick="lfOpenCourseWindow('/queryCourse/queryByTeacher.asp?QuerySource=Profile&amp;hidChkSearch=searchByTeacher&amp;PsnNoName=9702016&amp;scdfYYM=1031')" class="blue2" href="#" title="顯示教師課表"> 高強華</a><br /><a onclick="lfOpenCourseWindow('/queryCourse/queryByTeacher.asp?QuerySource=Profile&amp;hidChkSearch=searchByTeacher&amp;PsnNoName=A100050&amp;scdfYYM=1031')" class="blue2" href="#" title="顯示教師課表"> 謝雨潔</a>
+              </td>
+              <td align="center">1：06-07                         <br />無        <br /></td>
+              <td align="center">必</td>
+		   <td align="center">999</td><td align="center">4</td><td align="center"><font color="#DB0000">995</font></td>
+       </tr>
+
+       </tbody></table>
+       <br />
+
+          <input type="button" onclick="window.location.href='queryByCourse.asp?QuerySource=queryCourse&amp;ApGUID=&amp;SeleLoginServer='" value="重新查詢" name="Submit3" class="pubContent" />
+
+       <table width="135" border="0" align="center" height="30" class="pubContent">
+          <tbody><tr><td nowrap="nowrap"><div align="center"><a href="queryCourseGetRs.asp?QuerySource=queryCourse&amp;ApGUID=&amp;SeleLoginServer=&amp;SelePhase=&amp;PageSize=20&amp;AbsolutePage=1"><font color="#003399"><strong>第一頁</strong></font></a>  <strong><a href="queryCourseGetRs.asp?QuerySource=queryCourse&amp;ApGUID=&amp;SeleLoginServer=&amp;SelePhase=&amp;PageSize=20&amp;AbsolutePage=60"><font color="#003399">上20筆</font></a></strong>  <strong><a href="queryCourseGetRs.asp?QuerySource=queryCourse&amp;ApGUID=&amp;SeleLoginServer=&amp;SelePhase=&amp;PageSize=20&amp;AbsolutePage=62"><font color="#003399">下20筆</font></a></strong>  <strong><a href="queryCourseGetRs.asp?QuerySource=queryCourse&amp;ApGUID=&amp;SeleLoginServer=&amp;SelePhase=&amp;PageSize=20&amp;AbsolutePage=75"><font color="#003399">最後一頁</font></a></strong></div></td></tr>
+       </tbody></table>
+       </form>
+</td></tr>
+</tbody></table>
+<!--內文結束---------------->
+
+<!------------------------->
+<!--引用公用頁尾          -->
+<!------------------------->
+
+
+<!--顯示分隔線-->
+<table width="98%" cellspacing="0" cellpadding="0" border="0" align="center" id="tbLine_Footer">
+<tbody><tr><td width="100%" valign="top" background="/webPublic/images/pointLine.gif" align="center" height="10"></td>
+</tr>
+</tbody></table>
+
+<!--顯示說明-->
+<table width="80%" cellspacing="0" cellpadding="0" border="0" align="center" class="pubFooter" id="tbTitle_Footer">
+<tbody><tr><td width="100%" valign="middle" align="left">
+承辦單位：綜合業務組<br />
+如有問題請洽 (02) 2861-0511 轉11202 、11208、11211 或請 Mail 到 <a class="headerA" href="mailto:cuafd@staff.pccu.edu.tw">cuafd@staff.pccu.edu.tw</a><br />
+
+</td></tr>
+</tbody></table>
+
+
+
+
+
+</body></html>
