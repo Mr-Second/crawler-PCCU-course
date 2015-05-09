@@ -1,5 +1,4 @@
 require 'capybara'
-require 'capybara/poltergeist'
 require 'pry'
 require 'nokogiri'
 require 'uri'
@@ -8,15 +7,6 @@ class Crawler
   include Capybara::DSL
 
   def initialize
-    # Capybara.register_driver :poltergeist_errorless do |app|
-    #   Capybara::Poltergeist::Driver.new(app, {
-    #     js_errors: true,
-    #     inspector: true,
-    #     timeout: 10000,
-    #     phantomjs_options: ['--load-images=no', '--ignore-ssl-errors=yes', '--ssl-protocol=any'],
-    #     cookies: true,
-    #   })
-    # end
     Capybara.javascript_driver = :selenium
     Capybara.current_driver = :selenium
   end
@@ -40,7 +30,6 @@ class Crawler
           first("select[name=\"scdfFormClassSect\"] option[value=\"#{grade}\"]").select_option
 
           click_button '查詢'
-          # save pages
 
           page_count = 1
           begin
