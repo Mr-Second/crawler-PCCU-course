@@ -34,14 +34,12 @@ class Crawler
           page_count = 1
           begin
             while true
-              doc = Nokogiri::HTML(html)
               File.open("1031/#{grade}-#{page_count}.html", 'w') { |f| f.write(html) }
 
               click_on '下20筆'
               page_count += 1
             end
           rescue Exception => e
-
           end
         end
       end
