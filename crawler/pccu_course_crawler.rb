@@ -46,6 +46,7 @@ class PccuCourseCrawler
 
       within_frame 'downFrame' do
         within_frame 'rightFrame' do
+          sleep 2
           first('#scdfAcadmYear').set(@year-1911)
           first("#scdfTerm option[value=\"#{@term}\"]").select_option
           first("select[name=\"scdfFormClassSect\"] option[value=\"#{grade}\"]").select_option
