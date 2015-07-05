@@ -1,8 +1,10 @@
 require 'capybara'
-require 'capybara/poltergeist'
+# require 'capybara/poltergeist'
+require 'capybara-webkit'
 require 'pry'
 require 'nokogiri'
 require 'uri'
+require 'rest-client'
 
 require 'thread'
 require 'thwait'
@@ -19,62 +21,67 @@ class PccuCourseCrawler
 
     @base_url = "https://ap1.pccu.edu.tw"
 
-    Capybara.register_driver :poltergeist do |app|
-      Capybara::Poltergeist::Driver.new(app,  {
-        js_errors: false,
-        timeout: 10000,
-        ignore_ssl_errors: true,
-        debug: true,
-        phantomjs_options: [
-          '--load-images=no',
-          '--ignore-ssl-errors=yes',
-          '--ssl-protocol=any'],
-      })
-    end
+    # Capybara.register_driver :poltergeist do |app|
+    #   Capybara::Poltergeist::Driver.new(app,  {
+    #     js_errors: false,
+    #     timeout: 10000,
+    #     ignore_ssl_errors: true,
+    #     # debug: true,
+    #     phantomjs_options: [
+    #       '--load-images=no',
+    #       '--ignore-ssl-errors=yes',
+    #       '--ssl-protocol=any'],
+    #   })
+    # end
 
-    Capybara.javascript_driver = :poltergeist
-    Capybara.current_driver = :poltergeist
+    Capybara.javascript_driver = :selenium
+    Capybara.current_driver = :selenium
   end
 
   def courses
     @courses = []
-
     (1..4).each do |grade|
       visit "https://ap1.pccu.edu.tw/index.asp"
       click_on '課程/課表查詢'
 
+      sleep 3
       page.switch_to_window(page.windows.last)
 
-      url = URI.decode current_url
-      match = url.match(/ApGUID=\{(?<guid>.+)\}/)
-      guid = match[:guid]
+      # url = URI.decode current_url
+      # match = url.match(/ApGUID=\{(?<guid>.+)\}/)
+      # guid = match[:guid]
 
-      visit URI.encode "https://ap1.pccu.edu.tw/newAp/frame/apMainFrameSet.asp?ApGUID={#{guid}}"
+      # visit URI.encode "https://ap1.pccu.edu.tw/newAp/frame/apMainFrameSet.asp?ApGUID={#{guid}}"
+      # sleep 5
+      # binding.pry
 
-      within_frame 'downFrame' do
-        within_frame 'rightFrame' do
-          sleep 2
-          first('#scdfAcadmYear').set(@year-1911)
-          first("#scdfTerm option[value=\"#{@term}\"]").select_option
-          first("select[name=\"scdfFormClassSect\"] option[value=\"#{grade}\"]").select_option
+      frame = first 'iframe'
+      within_frame frame do
+        within_frame 'downFrame' do
+          within_frame 'rightFrame' do
+            sleep 2
+            first('#scdfAcadmYear').set(@year-1911)
+            first("#scdfTerm option[value=\"#{@term}\"]").select_option
+            first("select[name=\"scdfFormClassSect\"] option[value=\"#{grade}\"]").select_option
 
-          click_button '查詢'
+            click_button '查詢'
 
-          page_count = 1
-          all_page = nil;
-          begin
-            while true
-              all_page ||= all('font.pubImportantMsg')[1].text.to_i
+            page_count = 1
+            all_page = nil;
+            begin
+              while true
+                all_page ||= all('font.pubImportantMsg')[1].text.to_i
 
-              print " #{page_count} / #{all_page}\n"
-              # File.open("1031/#{grade}-#{page_count}.html", 'w') { |f| f.write(html) }
-              parse_course( Nokogiri::HTML(html) )
+                print " #{page_count} / #{all_page}\n"
+                # File.open("1031/#{grade}-#{page_count}.html", 'w') { |f| f.write(html) }
+                parse_course( Nokogiri::HTML(html) )
 
-              click_on '下20筆'
+                click_on '下20筆'
 
-              page_count += 1
+                page_count += 1
+              end
+            rescue Exception => e
             end
-          rescue Exception => e
           end
         end
       end
