@@ -4,6 +4,9 @@ require 'pry'
 require 'nokogiri'
 require 'uri'
 
+require 'thread'
+require 'thwait'
+
 class PccuCourseCrawler
   include Capybara::DSL
 
@@ -19,14 +22,18 @@ class PccuCourseCrawler
     Capybara.register_driver :poltergeist do |app|
       Capybara::Poltergeist::Driver.new(app,  {
         js_errors: false,
-        timeout: 300,
+        timeout: 10000,
         ignore_ssl_errors: true,
-        debug: true
+        debug: true,
+        phantomjs_options: [
+          '--load-images=no',
+          '--ignore-ssl-errors=yes',
+          '--ssl-protocol=any'],
       })
     end
 
-    Capybara.javascript_driver = :selenium
-    Capybara.current_driver = :selenium
+    Capybara.javascript_driver = :poltergeist
+    Capybara.current_driver = :poltergeist
   end
 
   def courses
@@ -54,9 +61,12 @@ class PccuCourseCrawler
           click_button '查詢'
 
           page_count = 1
+          all_page = nil;
           begin
             while true
-              print " #{page_count} |"
+              all_page ||= all('font.pubImportantMsg')[1].text.to_i
+
+              print " #{page_count} / #{all_page}\n"
               # File.open("1031/#{grade}-#{page_count}.html", 'w') { |f| f.write(html) }
               parse_course( Nokogiri::HTML(html) )
 
@@ -70,19 +80,20 @@ class PccuCourseCrawler
       end
     end
 
-    File.write('courses.json', JSON.pretty_generate(@courses))
     @courses
   end
 
   def parse_course doc
-      doc.css('table.pubTable tr:not(:first-child)').each do |row|
+    threads = []
+    doc.css('table.pubTable tr:not(:first-child)').each do |row|
+      threads << Thread.new do
         datas = row.css('td')
 
         datas[3].search('br').each {|d| d.replace("\n")}
         code_raw = datas[3].text.split("\n")
-        code = code_raw[0]
+        general_code = code_raw[0]
         group = code_raw[1]
-        code = "#{@year}-#{@term}-#{code}-#{group}"
+        code = "#{@year}-#{@term}-#{general_code}-#{group}"
 
         url = datas[5] && datas[5].css('a') && datas[5].css('a')[0] && datas[5].css('a')[0][:href]
 
@@ -104,7 +115,10 @@ class PccuCourseCrawler
         department = dep_raws[0]
         department_code = dep_raws[1]
 
-        @courses << {
+        course = {
+          year: @year,
+          term: @term,
+          general_code: general_code,
           grade: datas[2] && datas[2].text.to_i,
           code: code,
           department: department,
@@ -142,7 +156,12 @@ class PccuCourseCrawler
           location_8: course_locations[7],
           location_9: course_locations[8],
         }
-      end
+        @after_each_proc.call(course: course) if @after_each_proc
+        @courses << course
+      end # end new Thread
+    end # end each row
+
+    ThreadsWait.all_waits(*threads)
   end
 
   def current_year
@@ -154,5 +173,5 @@ class PccuCourseCrawler
   end
 end
 
-cc = PccuCourseCrawler.new(year: 2014, term: 1)
-cc.courses
+# cc = PccuCourseCrawler.new(year: 2014, term: 1)
+# File.write('pccu_courses.json', JSON.pretty_generate(cc.courses))
