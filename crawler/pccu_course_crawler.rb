@@ -12,6 +12,26 @@ require 'thwait'
 class PccuCourseCrawler
   include Capybara::DSL
 
+  PERIODS = {
+    "M1" => 1,
+    "M2" => 2,
+    "01" => 3,
+    "02" => 4,
+    "03" => 5,
+    "04" => 6,
+    "05" => 7,
+    "06" => 8,
+    "07" => 9,
+    "08" => 10,
+    "09" => 11,
+    "10" => 12,
+    "11" => 13,
+    "12" => 14,
+    "13" => 15,
+    "14" => 16,
+    "15" => 17,
+  }
+
   def initialize year: current_year, term: current_term, update_progress: nil, after_each: nil, params: nil
 
     @year = params && params["year"].to_i || year
@@ -107,13 +127,13 @@ class PccuCourseCrawler
         course_days = []
         course_periods = []
         course_locations = []
-        datas[8] && datas[8].text.match(/(?<d>\d)\：(?<p>\d{2}\-\d{2})\s+(?<loc>.\s+\d+)/) do |m|
+        datas[8] && datas[8].text.match(/(?<d>\d)\：(?<p>.{2}\-.{2})\s+(?<loc>.\s+\d+)/) do |m|
           m[:p] && ps = m[:p].split('-')
-          from = ps[0].to_i
-          to = ps[1].to_i
+          from = PERIODS[ps[0]]
+          to = PERIODS[ps[1]]
           (from..to).each do |period|
             course_days << m[:d].to_i
-            course_periods << period.to_i
+            course_periods << period
             course_locations << m[:loc].gsub(/\s+/, ' ')
           end
         end
