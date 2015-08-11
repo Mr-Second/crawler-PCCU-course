@@ -60,12 +60,19 @@ class PccuCourseCrawler
 
   def courses
     @courses = []
-    (1..4).each do |grade|
+
+    dept = 1
+    loop do
+    # (1..4).each do |grade|
+    # (1..@dept1_count-1).each do |dept|
+    # (1..dept_count_hash[dept]-1).each do |dept2|
       visit "https://ap1.pccu.edu.tw/index.asp"
       click_on '課程/課表查詢'
 
-      sleep 3
+      sleep 2
       page.switch_to_window(page.windows.last)
+      page.windows.first.close
+
 
       # url = URI.decode current_url
       # match = url.match(/ApGUID=\{(?<guid>.+)\}/)
@@ -82,12 +89,17 @@ class PccuCourseCrawler
             sleep 2
             first('#scdfAcadmYear').set(@year-1911)
             first("#scdfTerm option[value=\"#{@term}\"]").select_option
-            first("select[name=\"scdfFormClassSect\"] option[value=\"#{grade}\"]").select_option
+
+            @dept1_count ||= all('select[name="scdfColDep1"] option').count
+            # first("select[name=\"scdfFormClassSect\"] option[value=\"#{grade}\"]").select_option
+            all('select[name="scdfColDep1"] option')[dept].select_option
+            # all('select[name="scdfColDep2"] option')[dept2].select_option
 
             click_button '查詢'
 
             page_count = 1
             all_page = nil;
+
             begin
               while true
                 all_page ||= all('font.pubImportantMsg')[1].text.to_i
@@ -99,13 +111,17 @@ class PccuCourseCrawler
                 click_on '下20筆'
 
                 page_count += 1
-              end
+              end # end while
             rescue Exception => e
-            end
-          end
-        end
-      end
-    end
+            end # end begin
+
+          end # end rightFrame
+        end # end downframe
+      end # end iframe
+
+      dept += 1
+      break if dept >= @dept1_count - 1
+    end # end loop
 
     @courses
   end
@@ -120,7 +136,15 @@ class PccuCourseCrawler
         code_raw = datas[3].text.split("\n")
         general_code = code_raw[0]
         group = code_raw[1]
-        code = "#{@year}-#{@term}-#{general_code}-#{group}"
+        class_code = datas[2].text.strip
+
+        dep_raws = datas[1] && datas[1].text.split(' ')
+        department = dep_raws[0]
+        department_code = dep_raws[1]
+
+        name = datas[5] && datas[5].text.strip.gsub(/\s+/, ' ')
+
+        code = "#{@year}-#{@term}-#{general_code}-#{group}-#{class_code}-#{department_code}"
 
         url = datas[5] && datas[5].css('a') && datas[5].css('a')[0] && datas[5].css('a')[0][:href]
 
@@ -138,9 +162,6 @@ class PccuCourseCrawler
           end
         end
 
-        dep_raws = datas[1] && datas[1].text.split(' ')
-        department = dep_raws[0]
-        department_code = dep_raws[1]
 
         course = {
           year: @year,
@@ -150,7 +171,7 @@ class PccuCourseCrawler
           code: code,
           department: department,
           department_code: department_code,
-          name: datas[5] && datas[5].text.strip.gsub(/\s+/, ' '),
+          name: "(#{group}) #{name} [#{department}]",
           url: "#{@base_url}#{url}",
           credits: datas[6] && datas[6].text.to_i,
           lecturer: datas[7] && datas[7].text.strip,
@@ -200,5 +221,5 @@ class PccuCourseCrawler
   end
 end
 
-# cc = PccuCourseCrawler.new(year: 2014, term: 1)
-# File.write('pccu_courses.json', JSON.pretty_generate(cc.courses))
+# cc = PccuCourseCrawler.new(year: 2015, term: 1)
+# File.write('1041_pccu_courses.json', JSON.pretty_generate(cc.courses))
